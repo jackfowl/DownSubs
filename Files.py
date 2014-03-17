@@ -17,7 +17,7 @@ def hash_step(handle, value):
         value &= 0xFFFFFFFFFFFFFFFF # to remain as 64bit number  
     return value
 
-def hash_file(handle):
+def hash_file(handle, filesize):
     value = hash_handle(handle, filesize)
     handle.seek(max(0, filesize - WORD_SIZE), 0)
     value = hash_handle(handle, value)
@@ -30,5 +30,5 @@ def hash_size(path):
         raise FileTooSmallError('File too small to hash')
 
     with open(path, 'rb') as handle:
-        hash_file(handle)
+        hash_file(handle, filesize)
 
