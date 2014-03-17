@@ -1,62 +1,34 @@
-import struct, os, re, sys, ntpath
+import struct
+import os
 
-def hashSize(file): 
-      try:         
-          longlongformat = 'q'  # long long 
-          bytesize = struct.calcsize(longlongformat) 
-              
-          f = open(file, "rb") 
-              
-          filesize = os.path.getsize(file) 
-          hash = filesize 
-              
-          if filesize < 65536 * 2: 
-                 return "SizeError" 
-           
-          for x in range(int(65536/bytesize)): 
-                  buffer = f.read(bytesize) 
-                  (l_value,)= struct.unpack(longlongformat, buffer)  
-                  hash += l_value 
-                  hash = hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number  
-                   
+LONG_LONG_FORMAT = 'q'
+WORD_SIZE = 65536
+BYTESIZE = struct.calcsize(LONG_LONG_FORMAT)
+STEPS = int(WORD_SIZE / BYTESIZE)
 
-          f.seek(max(0,filesize-65536),0) 
-          for x in range(int(65536/bytesize)): 
-                  buffer = f.read(bytesize) 
-                  (l_value,)= struct.unpack(longlongformat, buffer)  
-                  hash += l_value 
-                  hash = hash & 0xFFFFFFFFFFFFFFFF 
-           
-          f.close() 
-          returnedhash =  "%016x" % hash 
-          return {'hash':returnedhash,'size':filesize,'error':None} 
-    
-      except(IOError): 
-           return {'hash':None,'size':None,'error':"IOError"}
+class FileTooSmallError(IOError):
+    pass
 
-def seriesEpisode(name):
-      default = {'series':None,'season':None,'episode':None,'tag':None,'error':None}
-      try:
-            result = default.copy()
-            fS_E_=r"[sS][0-9]{2}[eE][0-9]{2}"
-            fS_=r"[sS][0-9]{2}"
-            fE_=r"[eE][0-9]{2}"
-            pattern = re.compile(fS_E_)
-            parts = pattern.split(name)
-            result['series'] = re.sub("[._]", "", parts[0])
+def hash_step(handle, value):
+    for x in xrange(STEPS):
+        buff = handle.read(BYTESIZE)
+        (low_value,) = struct.unpack(LONG_LONG_FORMAT, buff)
+        value += low_value
+        value &= 0xFFFFFFFFFFFFFFFF # to remain as 64bit number  
+    return value
 
-            strS_E_ = pattern.findall(name)[0]
-            pattern = re.compile(fS_)
-            result['season'] = re.sub("[sS]","",pattern.findall(strS_E_)[0])
-            
+def hash_file(handle):
+    value = hash_handle(handle, filesize)
+    handle.seek(max(0, filesize - WORD_SIZE), 0)
+    value = hash_handle(handle, value)
+    return {'hash': "%016x" % (value),
+            'size': filesize}
 
-            pattern = re.compile(fE_)
-            result['episode'] = re.sub("[eE]","",pattern.findall(strS_E_)[0])
-            
-            result['tag'] = re.sub("\..{3}$", "", name)
-            
-      except:
-            result = default
-            result['error'] = sys.exc_info()
-      finally:
-            return result
+def hash_size(path):
+    filesize = os.path.getsize(path)
+    if filesize < (WORD_SIZE * 2):
+        raise FileTooSmallError('File too small to hash')
+
+    with open(path, 'rb') as handle:
+        hash_file(handle)
+
