@@ -50,6 +50,4 @@ class Application(tk.Frame):
             self.checkBoxes[-1].fill(item['name'],item['url'])
             self.checkBoxes[-1].grid(sticky=tk.W)
 
-app = Application()                       
-app.master.title('SubDownloader')    
-app.mainloop()                            
+                        
