@@ -1,7 +1,7 @@
 
 import unittest
 import os.path
-import open_subtitles_hash
+import Files
 
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 RESOURCE_PATH = os.path.join(DIR_PATH, 'resources')
@@ -21,13 +21,13 @@ class OpenSubtitleHashTest(unittest.TestCase):
 
     def test_hash_breakdance(self):
         resource_path = os.path.join(RESOURCE_PATH, 'breakdance.avi')
-        self.assertEqual(open_subtitles_hash.hash_size(resource_path), 
+        self.assertEqual(Files.hash_size(resource_path), 
                 {'hash': '8e245d9679d31e12',
                 'size': 12909756L})
 
     def test_hash_dummy(self):
         resource_path = os.path.join(RESOURCE_PATH, 'dummy.rar')
-        self.assertEqual(open_subtitles_hash.hash_size(resource_path), 
+        self.assertEqual(Files.hash_size(resource_path), 
                 {'hash': '2a527d74d45f5b1b',
                 'size': 2565922L})
 
