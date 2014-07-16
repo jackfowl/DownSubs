@@ -1,3 +1,5 @@
 *.pyc
 build
 dist
+test/resources/breakdance.avi
+test/resources/dummy.rar

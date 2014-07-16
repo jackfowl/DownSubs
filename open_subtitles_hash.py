@@ -18,9 +18,9 @@ def hash_step(handle, value):
     return value
 
 def hash_file(handle, filesize):
-    value = hash_handle(handle, filesize)
+    value = hash_step(handle, filesize)
     handle.seek(max(0, filesize - WORD_SIZE), 0)
-    value = hash_handle(handle, value)
+    value = hash_step(handle, value)
     return {'hash': "%016x" % (value),
             'size': filesize}
 
@@ -30,5 +30,5 @@ def hash_size(path):
         raise FileTooSmallError('File too small to hash')
 
     with open(path, 'rb') as handle:
-        hash_file(handle, filesize)
+        return hash_file(handle, filesize)
 
